@@ -18,3 +18,10 @@
 5. Allow users to click on their script and skip manually
 6. Recognise skipped words and correct accordingly
 7. Change languages
+
+### Colors:
+
+#1D2323
+#5C848E
+#DECDC3
+#E0E0EC
