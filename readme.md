@@ -25,3 +25,7 @@
 #5C848E
 #DECDC3
 #E0E0EC
+
+## Starting the application
+python3 -m flask run 
+Starting the venv -> source env/bin/activate
