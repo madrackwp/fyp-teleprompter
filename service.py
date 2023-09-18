@@ -1,15 +1,22 @@
-import librosa
 import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from collections import deque
+import wave
+from matplotlib.lines import Line2D
 
+
+def read_audio(file_path):
+    wf = wave.open(file_path, "rb")
+    data = wf.readframes(-1)
+    audio_data = np.frombuffer(data, dtype=np.int16)
+    sample_rate = wf.getframerate()
+    return audio_data, sample_rate
 
 def detect_peaks(signal, threshold):
     peaks, _ = find_peaks(signal, height=threshold, width=100)
     return peaks
-
 
 def peakAnalysis():
     audio = pyaudio.PyAudio()
@@ -19,16 +26,12 @@ def peakAnalysis():
     RATE = 44100
     CHUNK_SIZE = 2048
 
-
     THRESHOLD = 0.02
     audio = pyaudio.PyAudio()
     count = 0
     peakBuffer = deque(maxlen=CHUNK_SIZE)
 
-
-
     # Set up PyAudio
-
     # Create an input stream
     stream = audio.open(
         format=FORMAT,
@@ -77,6 +80,8 @@ def energyLevelDetection():
     count = 0
     is_speaking = False
     bufferSize = 10
+
+    audio_data, sample_rate = read_audio("audiofiles/processed/output_segment_0.wav")
     # Set up PyAudio
     audio = pyaudio.PyAudio()
     # Parameters for audio stream
@@ -87,7 +92,6 @@ def energyLevelDetection():
     peakBuffer = deque(maxlen=CHUNK_SIZE)
 
     bufferMin = 5
-    buffer = deque(maxlen=bufferMin)
     # Create an input stream
     stream = audio.open(
         format=FORMAT,
@@ -131,6 +135,64 @@ def energyLevelDetection():
 
         # Print the result
 
+def RMS():
+    ENERGY_THRESHOLD = 0.0005
+    count = 0
+    is_speaking = False
+    bufferSize = 10
+
+    audio_data, sample_rate = read_audio("audiofiles/processed/output_segment_0.wav")
+    # Set up PyAudio
+    # audio = pyaudio.PyAudio()
+    # Parameters for audio stream
+    # FORMAT = pyaudio.paFloat32
+    # CHANNELS = 1
+    # RATE = 44100
+    CHUNK_SIZE = 2048
+    peakBuffer = deque(maxlen=CHUNK_SIZE)
+
+    # bufferMin = 5
+    # Create an input stream
+    # stream = audio.open(
+    #     format=FORMAT,
+    #     channels=CHANNELS,
+    #     rate=RATE,
+    #     input=True,
+    #     frames_per_buffer=CHUNK_SIZE,
+    # )
+
+    plt.ion()  # Turn on interactive mode AKA allows for dynamic updates to the plot
+    fig, ax = plt.subplots()
+    x = np.arange(0, CHUNK_SIZE)  # This sets the range of the x axis
+    (line,) = ax.plot(x, np.random.rand(CHUNK_SIZE))
+
+    for i in range(0, len(audio_data), CHUNK_SIZE):
+
+        audio_chuck = audio_data[i:i + CHUNK_SIZE]
+        print(len(audio_chuck))
+        # Calculate the energy or use the peak indices as an indicator
+        energy = np.mean(np.square(audio_chuck))
+
+        is_speaking = energy > ENERGY_THRESHOLD
+        # Determine if someone is speaking based on the threshold
+        if len(peakBuffer) == CHUNK_SIZE:
+            peakBuffer.popleft()
+        peakBuffer.append(is_speaking)
+
+        flag = check_consecutive_ones(peakBuffer, 2)
+        if flag:
+            count += 1
+            peakBuffer.clear()
+            print("Word spoken!")
+            print("Word Count: ", count)
+
+
+        line.set_ydata(audio_chuck)
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+
+        # Print the result
+
 
 def check_consecutive_ones(arr, consecutive_threshold):
     ones_count = 0
@@ -149,5 +211,8 @@ def check_consecutive_ones(arr, consecutive_threshold):
     return False
 
 
+
+
 # energyLevelDetection()
-peakAnalysis()
+# peakAnalysis()
+RMS()

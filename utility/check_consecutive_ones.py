@@ -1,6 +1,6 @@
 def check_consecutive_ones(arr, consecutive_threshold):
     ones_count = 0
-    print(len(arr))
+    # print(len(arr))
     for i in range(len(arr)):
         if arr[i] == True:
             ones_count += 1
@@ -11,9 +11,5 @@ def check_consecutive_ones(arr, consecutive_threshold):
                 #     return False
         else:
             ones_count = 0
-    
+
     return False
-
-array = [False, False, True, True, True, True, False]
-print(check_consecutive_ones(array, 3))
-

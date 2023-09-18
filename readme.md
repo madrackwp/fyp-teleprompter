@@ -29,3 +29,5 @@
 ## Starting the application
 python3 -m flask run 
 Starting the venv -> source env/bin/activate
+
+
