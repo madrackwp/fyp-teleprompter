@@ -1,98 +1,58 @@
-import pyaudio
-import wave
-import matplotlib.pyplot as plt
 import numpy as np
 
-x_continuous = np.linspace(0, 10, 100)
-y_continuous = np.sin(x_continuous)
-
-# Non-continuous x-axis data
-x_non_continuous = [1, 2, 4, 7, 8]
-y_non_continuous = [0.5, 0.8, 0.2, 0.6, 0.9]
-
-# Create a figure and plot the continuous data
-plt.figure(figsize=(8, 4))  # Set the figure size
-plt.plot(x_continuous, y_continuous, label='Continuous')
-
-# Plot the non-continuous data with markers
-plt.plot(x_non_continuous, y_non_continuous, 'ro', label='Non-Continuous')
-
-# Add labels and a legend
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
-plt.legend()
-
-# Show the plot
-plt.grid(True)  # Add a grid for clarity
-plt.title('Mixed Continuous and Non-Continuous Plot')
-plt.show()
-# wav_file = wave.open('your_audio.wav', 'rb')
-# wav_file = wave.open('audiofiles/processed/output_segment_0.wav', 'rb')
-
-# channels = wav_file.getnchannels()
-# sample_width = wav_file.getsampwidth()
-# frame_rate = wav_file.getframerate()
-# num_frames = wav_file.getnframes()
-
-# audio_data = wav_file.readframes(num_frames)
-
-
-# if channels == 2:
-#     left_channel_data = np.frombuffer(audio_data, dtype=np.int16)[::2]
-#     right_channel_data = np.frombuffer(audio_data, dtype=np.int16)[1::2]
-#     # right_channel_data =
-# else:
-#     left_channel_data = np.frombuffer(audio_data, dtype=np.int16)
-
-# time = np.arange(0, len(left_channel_data)) / frame_rate
-
-# fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6))
+#==================== CONTROL DATA =======================
+test = [
+    1.784, 2.008, 2.373,2.877,3.167, 3.316, 3.886, 4.456, 4.661, 4.979, 5.502, 6.016, 6.193, 6.361, 6.8, 7.548, 7.959, 8.267, 8.65, 9.005, 9.294, 9.649, 9.799, 10.145, 10.967, 11.144, 11.518, 11.62, 12.172, 12.928, 14.348, 14.498, 14.628, 14.993, 15.404, 15.665, 15.955, 16.207, 16.450, 16.590, 17.150, 17.403, 17.561, 17.832, 18.402, 18.757, 19.112, 19.318, 19.542, 20.233
+]
+# testDict = {
+    # "in": 1.784,
+    # "a": 2.008, 
+    # "cozy": 2.373,
+    # "cottage": 2.877, "in": 3.167, "the": 3.316, "forest": 3.886,"a": 4.456,"cat": 4.661, "named": 4.979,"whiskers": 5.502,"sat": 6.016,"by": 6.193, "the": 6.361,"window": 6.8,"the": 7.548,"aroma": 7.959,"of": 8.267,"freshly": 8.650,"baked": 9.005,"bread": 9.294,"filled": 9.649,"the": 9.799,"room": 10.145,"creating": 10.967,
+#     "a": 11.144,
+#     "warm": 11.518,
+#     "and": 11.620,
+#     "inviting": 12.172,
+#     "atmostphere": 12.928,
+#     "it": 14.348,
+#     "was": 14.498,
+#     "a": 14.628,
+#     "perfect": 14.993,
+#     "moment": 15.404,
+#     "to": 15.665,
+#     "curl": 15.955,
+#     "up":16.207,
+#     "by":16.450,
+#     "the": 16.590,
+#     "fireplace": 17.150,
+#     "with": 17.403,
+#     "a": 17.561,
+#     "book": 17.832,
+#     "and": 18.402,
+#     "forget": 18.757,
+#     "about": 19.112,
+#     "the": 19.318,
+#     "world": 19.542,
+#     "outside": 20.233
+# }
 
 
-# ax1.plot(time, left_channel_data)
-# ax1.set_title('Left Channel')
-# ax1.set_xlabel('Time (s)')
-# ax1.set_ylabel('Amplitude')
-# ax1.grid()
 
-# # Plot the right channel waveform (if available)
-
-# ax2.plot(time, right_channel_data)
-# ax2.set_title('Right Channel')
-# ax2.set_xlabel('Time (s)')
-# ax2.set_ylabel('Amplitude')
-# ax2.grid()
-
-# # Adjust spacing between subplots
-# plt.tight_layout()
-
-# # Show the plots
-# plt.show()
+# print(len(test))
+# for index, num in enumerate(test):
+#     test[index] = num + 1
 
 
-# Read the audio data
-# audio_data = wav_file.readframes(num_frames)
+# np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/control/controlData.npz", controlData = test)
+
+# ======================= SHORT CONTROL ======================
+test = [0.819, 1.126, 1.495, 1.751, 1.813, 2.048, 3.134, 3.594, 3.799, 4.035, 4.270, 5.325, 5.622, 5.807, 6.155, 7.220, 7.445, 8.039 ]
+# print(len(test))
+print(len(test))
+for index, num in enumerate(test):
+    test[index] = num + 1
+np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/control/controlShortData.npz", controlShortData = test)
+
+# print(len(test))
 
 
-# wav_file = wave.open('your_audio.wav', 'rb')
-
-# audio = pyaudio.PyAudio()
-
-# stream = audio.open(
-#     format=audio.get_format_from_width(wav_file.getsampwidth()),
-#     channels=wav_file.getnchannels(),  # Listen to the left channel
-#     rate=wav_file.getframerate(),
-#     output=True
-# )
-
-# chunk_size = 1024
-
-# data = wav_file.readframes(chunk_size)
-
-# while data:
-#     stream.write(data)
-#     data = wav_file.readframes(chunk_size)
-
-# stream.stop_stream()
-# stream.close()
-# audio.terminate()

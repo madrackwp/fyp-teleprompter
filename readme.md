@@ -31,3 +31,24 @@ python3 -m flask run
 Starting the venv -> source env/bin/activate
 
 
+## Audio data:
+- From: https://www.kaggle.com/datasets/pavanelisetty/sample-audio-files-for-speech-recognition/data
+
+## GUI structure
+MainWindow
+|- layout1
+  |- layout2
+    |- informationDisplay
+    |- inputBox
+    |- uploadButton
+    |- fileUploadButton
+    |- scrollingButtonLayout
+      |- decrementSentenceButton
+      |- decrementWordButton
+      |- incrementWordButton
+      |- incrementSentenceButton
+    |- startStopLayout
+      |- startButton
+      |- stopButton
+  |- layout3
+    |- teleprompterScreen
