@@ -79,7 +79,9 @@ class MainWindow(QMainWindow):
         layout3 = QVBoxLayout()
         scrollingButtonLayout = QHBoxLayout()
         # script = "In a cozy cottage in the forest, a cat named Whiskers sat by the window. The aroma of freshly baked bread filled the room, creating a warm and inviting atmosphere. It was a perfect moment to curl up by the fireplace with a book and forget about the world outside."
-        script = "The cat sat on the mat. It saw a big bug. It ran and hid. The dog barked. "
+        # script = "The cat sat on the mat. It saw a big bug. It ran and hid. The dog barked. "
+        script = "The extraordinary, magnificent landscape stretched endlessly before us, with the sun casting a brilliant, luminous glow over the picturesque, snow-capped mountains."
+
 
         self.readText = ReadText()
         self.unreadText = UnreadText(script)
@@ -186,8 +188,8 @@ class MainWindow(QMainWindow):
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
     
     def audioAnalysis(self, increment_word_callback, increment_sentence_callback):
-        self.CHUNK =  1024  # Number of frames per buffer
-        self.ENERGY_THRESHOLD = 500 #this is the RMS value threshold 
+        self.CHUNK =  1024 * 2# Number of frames per buffer
+        self.ENERGY_THRESHOLD = 1500 #this is the RMS value threshold 
         self.FORMAT = pyaudio.paInt16  # Format for audio input
         self.CHANNELS = 1  
         self.RATE = 44100  # Sample rate (samples per second)
@@ -196,7 +198,7 @@ class MainWindow(QMainWindow):
  
         self.wordFlag = False
 
-        self.WHITENOISEBUFFERSIZE = 56 
+        self.WHITENOISEBUFFERSIZE = 56 // 2
         # self.CHUNK_SIZE = 35280 // 2
 
         self.whiteNoiseBuffer = []
@@ -400,7 +402,7 @@ class MainWindow(QMainWindow):
 
     def saveLogs(self, xRAWArray, yRAWArray, wordCountTimings, periodCountTimings):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        output_directory = f"/Users/wpgoh/Documents/fyp-teleprompter/results/Short/{timestamp}"  
+        output_directory = f"/Users/wpgoh/Documents/fyp-teleprompter/results/Long/{timestamp}"  
         # directory = "results"
         os.mkdir(output_directory)
         savepath = os.path.join(output_directory, f"{timestamp}.png")
@@ -431,7 +433,7 @@ class MainWindow(QMainWindow):
         #     json.dump(logsData, jsonFile)
         
         # print(f"Logs saved to: {output_directory}")        
-        np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/results/Short/{timestamp}/data.npz", xRAWArray = xRAWArray, yRAWArray = yRAWArray, wordCountTimings = wordCountTimings, periodCountTimings = periodCountTimings)
+        np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/results/Long/{timestamp}/data.npz", xRAWArray = xRAWArray, yRAWArray = yRAWArray, wordCountTimings = wordCountTimings, periodCountTimings = periodCountTimings)
 
 def main():
     app = QApplication(sys.argv)

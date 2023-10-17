@@ -46,12 +46,20 @@ test = [
 # np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/control/controlData.npz", controlData = test)
 
 # ======================= SHORT CONTROL ======================
-test = [0.819, 1.126, 1.495, 1.751, 1.813, 2.048, 3.134, 3.594, 3.799, 4.035, 4.270, 5.325, 5.622, 5.807, 6.155, 7.220, 7.445, 8.039 ]
+# test = [0.819, 1.126, 1.495, 1.751, 1.813, 2.048, 3.134, 3.594, 3.799, 4.035, 4.270, 5.325, 5.622, 5.807, 6.155, 7.220, 7.445, 8.039 ]
+# # print(len(test))
+# print(len(test))
+# for index, num in enumerate(test):
+#     test[index] = num + 1
+# np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/control/controlShortData.npz", controlShortData = test)
+
+# ======================= LONG CONTROL ======================
+test = [0.434, 1.569,2.560, 3.173, 3.861, 4.577, 5.065, 5.279, 6.077, 6.325, 6.634, 7.192, 7.481, 7.901, 8.472, 8.891, 9.360, 9.456, 10.179, 11.335, 12.360 ]
 # print(len(test))
 print(len(test))
 for index, num in enumerate(test):
     test[index] = num + 1
-np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/control/controlShortData.npz", controlShortData = test)
+np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/control/controlLongData.npz", controlLongData = test)
 
 # print(len(test))
 
