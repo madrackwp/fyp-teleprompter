@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-loaded_data = np.load("/Users/wpgoh/Documents/fyp-teleprompter/results/Long/Experiment8.4/data.npz")
+loaded_data = np.load("/Users/wpgoh/Documents/fyp-teleprompter/results/Short/Experiment4.4/data.npz")
 
-loadedControlData = np.load("/Users/wpgoh/Documents/fyp-teleprompter/control/controlLongData.npz")
-controlData = loadedControlData["controlLongData"]
+loadedControlData = np.load("/Users/wpgoh/Documents/fyp-teleprompter/control/controlShortData.npz")
+controlData = loadedControlData["controlShortData"]
 xRAWArray = loaded_data["xRAWArray"]
 yRAWArray = loaded_data["yRAWArray"]
 wordCountTimings = loaded_data["wordCountTimings"]
