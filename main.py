@@ -65,21 +65,23 @@ class MainWindow(QMainWindow):
 
         self.RECORDING = False
         self.INFORMATION_SCREEN_TEXTS = {
-            "welcome": "Use the arrow keys to jump forward\nUpload your own scripts as a .txt files or type it in directly in the box below!",
+            "welcome": "Upload your script and press start!",
+            "loading": "Loading....",
             "end" : "You have reached the end of your script",
             "start" : "You have reached the start of your script",
             "recording": "You may now speak!",
             "restart": "Click start to restart!"
         }
 
-        self.setWindowTitle("Teleprompter")
+        self.setWindowTitle("Voice Synchronised Teleprompter")
         self.script = ""
         layout1 = QHBoxLayout()
         layout2 = QVBoxLayout()
         layout3 = QVBoxLayout()
         scrollingButtonLayout = QHBoxLayout()
-        # script = "In a cozy cottage in the forest, a cat named Whiskers sat by the window. The aroma of freshly baked bread filled the room, creating a warm and inviting atmosphere. It was a perfect moment to curl up by the fireplace with a book and forget about the world outside."
-        script = "The cat sat on the mat. It saw a big bug. It ran and hid. The dog barked. "
+        # script = "Welcome to the Voice-Synchronised Teleprompter! To begin, upload your own script by pasting it in the Input box and uploading it with the 'Upload Script Button'. You can also upload your own scripts as a txt file with the 'Upload from computer' button. Use &gt; to jump one word ahead. Use &lt; to jump one word back. Use &gt;&gt; to jump one sentence ahead. Use &lt;&lt; to jump one sentence backwards. Use 'Start' to start your the VST and 'Stop' to stop" 
+        script = "In a cozy cottage in the forest, a cat named Whiskers sat by the window. The aroma of freshly baked bread filled the room, creating a warm and inviting atmosphere. It was a perfect moment to curl up by the fireplace with a book and forget about the world outside."
+        # script = "The cat sat on the mat. It saw a big bug. It ran and hid. The dog barked. "
         # script = "The extraordinary, magnificent landscape stretched endlessly before us, with the sun casting a brilliant, luminous glow over the picturesque, snow-capped mountains."
 
 
@@ -98,7 +100,7 @@ class MainWindow(QMainWindow):
 
         self.teleprompterScreenWrapper.addWidget(self.teleprompterScreen)
 
-        self.teleprompterScreen.setStyleSheet("background-color: yellow;color: black; padding: 10px;")
+        self.teleprompterScreen.setStyleSheet("background-color: rgb(145, 144, 152); color: rgb(50, 50, 50); padding: 10px;")
         self.teleprompterScreen.setWordWrap(True)
         # teleprompterScreen.setBack
         self.teleprompterWidget = QWidget()
@@ -154,12 +156,14 @@ class MainWindow(QMainWindow):
 
 
         
-        debuggingLayout = QHBoxLayout()
-        self.wordCounterDisplay = QLabel(f"Word Count: {self.wordCount}")
-        self.periodCounterDisplay = QLabel(f"Period Counter: {self.periodCount}")
-        debuggingLayout.addWidget(self.wordCounterDisplay)
-        debuggingLayout.addWidget(self.periodCounterDisplay)
-        layout2.addLayout(debuggingLayout)
+        # debuggingLayout = QHBoxLayout()
+        # self.wordCounterDisplay = QLabel(f"Word Count: {self.wordCount}")
+        # self.periodCounterDisplay = QLabel(f"Period Counter: {self.periodCount}")
+        # debuggingLayout.addWidget(self.wordCounterDisplay)
+        # debuggingLayout.addWidget(self.periodCounterDisplay)
+        # layout2.addLayout(debuggingLayout)
+
+
 
 
         startStopLayout = QHBoxLayout()
@@ -188,8 +192,8 @@ class MainWindow(QMainWindow):
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
     
     def audioAnalysis(self, increment_word_callback, increment_sentence_callback):
-        self.CHUNK =  1024 # Number of frames per buffer
-        self.ENERGY_THRESHOLD = 600 #this is the RMS value threshold 
+        self.BUFFER_SIZE =  216 # Number of frames per buffer
+        self.ENERGY_THRESHOLD = 1000 #this is the RMS value threshold 
         self.FORMAT = pyaudio.paInt16  # Format for audio input
         self.CHANNELS = 1  
         self.RATE = 44100  # Sample rate (samples per second)
@@ -198,8 +202,8 @@ class MainWindow(QMainWindow):
  
         self.wordFlag = False
 
-        self.WHITENOISEBUFFERSIZE = 56
-        # self.CHUNK_SIZE = 35280 // 2
+        self.WHITENOISEBUFFERSIZE = 56 * 4
+        # self.BUFFER_SIZE_SIZE = 35280 // 2
 
         self.whiteNoiseBuffer = []
         self.energyGraphx, self.energyGraphy = [], []
@@ -224,10 +228,10 @@ class MainWindow(QMainWindow):
         start_time = time.time()
         self.stream = self.audio.open(format=self.FORMAT, channels=self.CHANNELS,
                             rate=self.RATE, input=True,
-                            frames_per_buffer=self.CHUNK)
+                            frames_per_buffer=self.BUFFER_SIZE)
         while self.RECORDING:
             
-            audio_chunk = np.frombuffer(self.stream.read(self.CHUNK), dtype=np.int16)
+            audio_chunk = np.frombuffer(self.stream.read(self.BUFFER_SIZE), dtype=np.int16)
             self.audioDataY.extend(audio_chunk)
 
             # Add the new audio chunk to the rolling buffer
@@ -236,57 +240,70 @@ class MainWindow(QMainWindow):
 
             buffer = audio_chunk
             npBuffer = np.array(buffer, dtype=np.int32)
-            # Calculate the energy or use the peak indices as an indicator
             squared = np.square(npBuffer)
             meaned = np.mean(squared)
             rms = np.sqrt(meaned)
-            energy = rms
-            # print(energy)
+
+
+            # energy = rms
+            # print(rms)
 
             if len(self.whiteNoiseBuffer) < self.WHITENOISEBUFFERSIZE:
-
-                self.whiteNoiseBuffer.append(energy)
+                self.whiteNoiseBuffer.append(rms)
             elif self.whiteNoiseEnergy is None:
                 self.whiteNoiseEnergy = np.mean(self.whiteNoiseBuffer)
                 print(f"White Noise energy calculated: {self.whiteNoiseEnergy}")
+                self.informationDisplay.setText(self.INFORMATION_SCREEN_TEXTS["recording"])
+
+
 
             if self.whiteNoiseEnergy is not None:
-                if energy <= self.whiteNoiseEnergy:
-                    self.silenceBuffer.append(energy)
+                #If RMS values fall below or equal to the whiteNoiseEnergy levels
+                if rms <= self.whiteNoiseEnergy:
+                    self.silenceBuffer.append(rms)
                     self.non_silence_count = 0
-                elif len(self.silenceBuffer) > 0 and energy > self.whiteNoiseEnergy:
+                #If RMS values do not fall below the whiteNoiseEnergy level, we do not want to immediately dismiss it as speech    
+                elif len(self.silenceBuffer) > 0 and rms > self.whiteNoiseEnergy:
                     self.non_silence_count += 1
-
+                #if non_silence_count goes beyond a value, it will be considered speech
                 if self.non_silence_count == 5:
                     self.silenceBuffer.clear()
                     self.non_silence_count = 0
-
-
-                if len(self.silenceBuffer) == self.WHITENOISEBUFFERSIZE // 2 and self.wordFlag:
-                    period_curr_time = time.time()
-                    self.periodCountTimings.append(period_curr_time-start_time)
+                #This is to trigger the period detection
+                if len(self.silenceBuffer) == self.WHITENOISEBUFFERSIZE and self.wordFlag:
                     print("PERIOD DETECTED!")
                     self.periodCount += 1
-                    self.periodCounterDisplay.setText(f"Period Counter: {self.periodCount}")
+                    # self.periodCounterDisplay.setText(f"Period Counter: {self.periodCount}")
                     self.silenceBuffer.clear()
                     self.non_silence_count = 0
                     self.wordFlag = False
                     increment_sentence_callback.emit(True)
 
+
+                    
+                # if len(self.silenceBuffer) == self.WHITENOISEBUFFERSIZE // 2 and self.wordFlag:
+                #     period_curr_time = time.time()
+                #     self.periodCountTimings.append(period_curr_time-start_time)
+                #     print("PERIOD DETECTED!")
+                #     self.periodCount += 1
+                #     self.periodCounterDisplay.setText(f"Period Counter: {self.periodCount}")
+                #     self.silenceBuffer.clear()
+                #     self.non_silence_count = 0
+                #     self.wordFlag = False
+                #     increment_sentence_callback.emit(True)
+
                     
 
             #this is just for plotting of the graph
-            self.energyGraphy.append(energy)
+            self.energyGraphy.append(rms)
             # self.elapsedTime 
             self.energyGraphx.append(self.elapsedTime)
-            self.elapsedTime += self.CHUNK / self.RATE / self.nchannels
-            # self.energyGraphx.append(self.CHUNK / self.RATE / self.nchannels)
+            self.elapsedTime += self.BUFFER_SIZE / self.RATE / self.nchannels
+            # self.energyGraphx.append(self.BUFFER_SIZE / self.RATE / self.nchannels)
 
-            # I want to check the past 3 values, if the middle value is higher than both the values before and after, increment word by one
-            ## First get the past 3 values
+
             if len(self.energyGraphy) >= 5:
-
-                latestValue = energy
+                latestValue = rms
                 secondLastValue = self.energyGraphy[-2]
                 middleValue = self.energyGraphy[-3]
                 secondValue = self.energyGraphy[-4]
@@ -297,10 +314,27 @@ class MainWindow(QMainWindow):
                     self.wordCountTimings.append(wordCount_time - start_time)
                     self.wordCount += 1
                     increment_word_callback.emit(True)
-                    self.wordCounterDisplay.setText(f"Word Count: {self.wordCount}")
+                    # self.wordCounterDisplay.setText(f"Word Count: {self.wordCount}")
                     if not self.wordFlag:
                         self.wordFlag = True
                     print(f"CURRENT WORD COUNT: {self.wordCount}")
+
+            # if len(self.energyGraphy) >= 5:
+            #     latestValue = rms
+            #     secondLastValue = self.energyGraphy[-2]
+            #     middleValue = self.energyGraphy[-3]
+            #     secondValue = self.energyGraphy[-4]
+            #     firstValue = self.energyGraphy[-5]
+
+            #     if secondLastValue > latestValue and secondValue > firstValue and middleValue > secondValue and middleValue > secondLastValue and middleValue >= self.ENERGY_THRESHOLD:
+            #         wordCount_time = time.time()
+            #         self.wordCountTimings.append(wordCount_time - start_time)
+            #         self.wordCount += 1
+            #         increment_word_callback.emit(True)
+            #         self.wordCounterDisplay.setText(f"Word Count: {self.wordCount}")
+            #         if not self.wordFlag:
+            #             self.wordFlag = True
+            #         print(f"CURRENT WORD COUNT: {self.wordCount}")
                     # self.GUI.incrementWord_fn()
         # timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         # plt.plot(self.energyGraphx, self.energyGraphy)
@@ -311,7 +345,7 @@ class MainWindow(QMainWindow):
         # print(self.energyGraphy)
         self.audioDataX = []
         for index, data in enumerate(self.energyGraphx):
-            for i in range(index*self.CHUNK, (index+1)*self.CHUNK):
+            for i in range(index*self.BUFFER_SIZE, (index+1)*self.BUFFER_SIZE):
                 self.audioDataX.append((index+i)/self.RATE/self.CHANNELS)
 
         # return self.energyGraphx, self.energyGraphy
@@ -331,7 +365,8 @@ class MainWindow(QMainWindow):
     
     def startTeleprompter(self):
         print("CREATING A NEW WORKER!")
-        self.informationDisplay.setText(self.INFORMATION_SCREEN_TEXTS["recording"])
+        self.informationDisplay.setText(self.INFORMATION_SCREEN_TEXTS["loading"])
+
         worker = Worker(self.audioAnalysis)
 
         worker.signals.incrementWord.connect(self.incrementWord_fn)
@@ -366,16 +401,22 @@ class MainWindow(QMainWindow):
         # print("Getting data!")
         print("TRYING TO INCREMENT WORD")
         word = self.unreadText.removeWord()
+        if word is None:
+            self.informationDisplay.setText(self.INFORMATION_SCREEN_TEXTS["end"])
         # print(word)
-        self.readText.addWord(word)
-        self.teleprompterScreen.setText(self.readText.format()+self.unreadText.format())
+        else:
+            self.readText.addWord(word)
+            self.teleprompterScreen.setText(self.readText.format()+self.unreadText.format())
     
     def decrementWord_fn(self):
         print("Trying to decrement word")
         word = self.readText.removeWord()
+        if word is None:
+            self.informationDisplay.setText(self.INFORMATION_SCREEN_TEXTS["start"])
         # print(word)
-        self.unreadText.addWord(word)
-        self.teleprompterScreen.setText(self.readText.format()+self.unreadText.format())
+        else:
+            self.unreadText.addWord(word)
+            self.teleprompterScreen.setText(self.readText.format()+self.unreadText.format())
 
     def incrementSentence_fn(self):
         # print("TRYING TO INCREMENT WORD")
@@ -388,6 +429,8 @@ class MainWindow(QMainWindow):
     def incrementSentenceManual_fn(self):
         # print("TRYING TO INCREMENT WORD")
         sentence = self.unreadText.removeSentenceManual()
+        if sentence is None:
+            self.informationDisplay.setText(self.INFORMATION_SCREEN_TEXTS["end"])
         print(sentence)
         if sentence is not None:
             self.readText.addSentence(sentence)
@@ -396,13 +439,15 @@ class MainWindow(QMainWindow):
     def decrementSentence_fn(self):
         # print("Trying to decrement word")
         sentence = self.readText.removeSentence()
+        if sentence is None:
+            self.informationDisplay.setText(self.INFORMATION_SCREEN_TEXTS["start"])
         # print(sentence)
         self.unreadText.addSentence(sentence)
         self.teleprompterScreen.setText(self.readText.format()+self.unreadText.format())
 
     def saveLogs(self, xRAWArray, yRAWArray, wordCountTimings, periodCountTimings):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        output_directory = f"/Users/wpgoh/Documents/fyp-teleprompter/results/Short/{timestamp}"  
+        output_directory = f"/Users/wpgoh/Documents/fyp-teleprompter/results/RMS and Threshold/{timestamp}"  
         # directory = "results"
         os.mkdir(output_directory)
         savepath = os.path.join(output_directory, f"{timestamp}.png")
@@ -433,7 +478,7 @@ class MainWindow(QMainWindow):
         #     json.dump(logsData, jsonFile)
         
         # print(f"Logs saved to: {output_directory}")        
-        np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/results/Short/{timestamp}/data.npz", xRAWArray = xRAWArray, yRAWArray = yRAWArray, wordCountTimings = wordCountTimings, periodCountTimings = periodCountTimings)
+        np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/results/RMS and Threshold/{timestamp}/data.npz", xRAWArray = xRAWArray, yRAWArray = yRAWArray, wordCountTimings = wordCountTimings, periodCountTimings = periodCountTimings)
 
 def main():
     app = QApplication(sys.argv)
