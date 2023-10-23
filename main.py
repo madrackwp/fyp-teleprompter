@@ -80,9 +80,9 @@ class MainWindow(QMainWindow):
         layout3 = QVBoxLayout()
         scrollingButtonLayout = QHBoxLayout()
         # script = "Welcome to the Voice-Synchronised Teleprompter! To begin, upload your own script by pasting it in the Input box and uploading it with the 'Upload Script Button'. You can also upload your own scripts as a txt file with the 'Upload from computer' button. Use &gt; to jump one word ahead. Use &lt; to jump one word back. Use &gt;&gt; to jump one sentence ahead. Use &lt;&lt; to jump one sentence backwards. Use 'Start' to start your the VST and 'Stop' to stop" 
-        script = "In a cozy cottage in the forest, a cat named Whiskers sat by the window. The aroma of freshly baked bread filled the room, creating a warm and inviting atmosphere. It was a perfect moment to curl up by the fireplace with a book and forget about the world outside."
+        # script = "In a cosy cottage in the forest, a cat named Whiskers sat by the window. The aroma of freshly baked bread filled the room, creating a warm and inviting atmosphere. It was a perfect moment to curl up by the fireplace with a book and forget about the world outside."
         # script = "The cat sat on the mat. It saw a big bug. It ran and hid. The dog barked. "
-        # script = "The extraordinary, magnificent landscape stretched endlessly before us, with the sun casting a brilliant, luminous glow over the picturesque, snow-capped mountains."
+        script = "The extraordinary, magnificent landscape stretched endlessly before us, with the sun casting a brilliant, luminous glow over the picturesque, snow-capped mountains."
 
 
         self.readText = ReadText()
@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
     
     def audioAnalysis(self, increment_word_callback, increment_sentence_callback):
-        self.BUFFER_SIZE =  216 # Number of frames per buffer
+        self.BUFFER_SIZE =  1024 # Number of frames per buffer
         self.ENERGY_THRESHOLD = 1000 #this is the RMS value threshold 
         self.FORMAT = pyaudio.paInt16  # Format for audio input
         self.CHANNELS = 1  
@@ -202,7 +202,7 @@ class MainWindow(QMainWindow):
  
         self.wordFlag = False
 
-        self.WHITENOISEBUFFERSIZE = 56 * 4
+        self.WHITENOISEBUFFERSIZE = 56
         # self.BUFFER_SIZE_SIZE = 35280 // 2
 
         self.whiteNoiseBuffer = []
@@ -447,7 +447,8 @@ class MainWindow(QMainWindow):
 
     def saveLogs(self, xRAWArray, yRAWArray, wordCountTimings, periodCountTimings):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        output_directory = f"/Users/wpgoh/Documents/fyp-teleprompter/results/RMS and Threshold/{timestamp}"  
+        # output_directory = f"/Users/wpgoh/Documents/fyp-teleprompter/results/Long/{timestamp}"  
+        output_directory = f"/Users/wpgoh/Documents/fyp-teleprompter/User Studies/Sheng Jie/Long/{timestamp}"  
         # directory = "results"
         os.mkdir(output_directory)
         savepath = os.path.join(output_directory, f"{timestamp}.png")
@@ -477,8 +478,8 @@ class MainWindow(QMainWindow):
         # with open(f"{output_directory}/data.json", "w") as jsonFile:
         #     json.dump(logsData, jsonFile)
         
-        # print(f"Logs saved to: {output_directory}")        
-        np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/results/RMS and Threshold/{timestamp}/data.npz", xRAWArray = xRAWArray, yRAWArray = yRAWArray, wordCountTimings = wordCountTimings, periodCountTimings = periodCountTimings)
+        print(f"Logs saved to: {output_directory}")        
+        np.savez(f"/Users/wpgoh/Documents/fyp-teleprompter/User Studies/Sheng Jie/Long/{timestamp}/data.npz", xRAWArray = xRAWArray, yRAWArray = yRAWArray, wordCountTimings = wordCountTimings, periodCountTimings = periodCountTimings)
 
 def main():
     app = QApplication(sys.argv)
